@@ -62,7 +62,7 @@ class ProductContainer extends StatelessWidget {
               children: [
                 Text("Đơn giá : ${product.price ~/ numbers}đ",
                     style: TextStyle(color: colorInUsed["text"], fontSize: 16)),
-                Text("Số lượng : ${product.quantity}",
+                Text("Số lượng : $numbers",
                     style: TextStyle(color: colorInUsed["text"], fontSize: 16)),
               ],
             ),

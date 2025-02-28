@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:vcartpi/core/configs/app_configs.dart';
 import 'package:vcartpi/core/utils/api_service.dart';
+import 'package:vcartpi/data/models/product.dart';
+import 'package:vcartpi/presentation/pages/product_page/components/product_container.dart';
 
 class ProductScreen extends StatefulWidget {
   @override
@@ -7,19 +10,22 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  late Future<List<dynamic>> futureProducts;
+  late Future<List<Product>> futureProducts;
 
   @override
   void initState() {
     super.initState();
     futureProducts = ApiService().fetchProducts();
+    AppConfig.loadColors();
   }
 
   @override
   Widget build(BuildContext context) {
+    AppConfig.loadColors();
     return Scaffold(
       appBar: AppBar(title: Text("Sản phẩm")),
-      body: FutureBuilder<List<dynamic>>(
+      body: FutureBuilder<List<Product>>(
+        // Đổi kiểu dữ liệu về List<Product>
         future: futureProducts,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -34,11 +40,10 @@ class _ProductScreenState extends State<ProductScreen> {
           return ListView.builder(
             itemCount: products.length,
             itemBuilder: (context, index) {
-              print(products);
-              return ListTile(
-                title: Text(products[index]['title']),
-                subtitle: Text("Giá: ${products[index]['price']}"),
-              );
+              return ProductContainer(
+                  product: products[index],
+                  numbers: 1,
+                  colorInUsed: AppConfig.colorOfHomePage);
             },
           );
         },

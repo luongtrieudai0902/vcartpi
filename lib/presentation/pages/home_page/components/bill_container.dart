@@ -1,50 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:vcartpi/core/configs/app_configs.dart';
-import 'package:vcartpi/data/models/product_count_money.dart';
+import 'package:vcartpi/data/models/product.dart';
 
 class BillContainer extends StatefulWidget {
-  const BillContainer({super.key});
+  final Stream<List<Product>> Function() streamProducts; // Hàm trả về Stream
+
+  const BillContainer({super.key, required this.streamProducts});
 
   @override
   State<BillContainer> createState() => _BillContainerState();
 }
 
 class _BillContainerState extends State<BillContainer> {
-  List<ProductCountMoneyModel> listProducts = [];
-  Map<String, ProductCountMoneyModel> groupedProducts = {};
-
-  void _loadProducts() {
-    listProducts = ProductCountMoneyModel.loadListProducts();
-    // Nhóm sản phẩm trùng nhau theo name
-    groupedProducts.clear();
-    for (var product in listProducts) {
-      if (groupedProducts.containsKey(product.name)) {
-        groupedProducts[product.name]!.numbers += 1;
-        groupedProducts[product.name]!.value += product.value;
-      } else {
-        groupedProducts[product.name] = ProductCountMoneyModel(
-          name: product.name,
-          numbers: 1,
-          value: product.value,
-          imgUrl: product.imgUrl,
-        );
-      }
-    }
-  }
+  late Stream<List<Product>> productStream;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    productStream = widget.streamProducts(); // Gọi stream
     AppConfig.loadColors();
     AppConfig.loadLanguage();
   }
 
   @override
   Widget build(BuildContext context) {
-    _loadProducts();
-    AppConfig.loadColors();
-    AppConfig.loadLanguage();
     return Container(
       margin: EdgeInsets.all(10),
       padding: EdgeInsets.all(5),
@@ -64,51 +43,69 @@ class _BillContainerState extends State<BillContainer> {
             ),
           ),
           SizedBox(height: 10),
-          // Đây là hiển thị tên các sản phẩm
+          // Danh sách sản phẩm
           Container(
             padding: const EdgeInsets.only(left: 10, top: 15),
             width: 278,
             height: 314,
-            // Đặt SingleChildScrollView bên trong Container
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: groupedProducts.entries.map((entry) {
-                  String nameProduct = entry.key;
-                  ProductCountMoneyModel product = entry.value;
+            child: StreamBuilder<List<Product>>(
+              stream: productStream, // Dữ liệu đến liên tục
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Lỗi tải dữ liệu"));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text("Không có sản phẩm nào"));
+                }
 
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "$nameProduct \t\t x${product.numbers}",
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: AppConfig.colorOfHomePage["text"]),
+                List<Product> products = snapshot.data!;
+                int totalPrice = products.fold(
+                    0, (sum, item) => sum + item.price * item.quantity);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SingleChildScrollView(
+                      child: Column(
+                        children: products.map((product) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "${product.productName} \t\t x${product.quantity}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppConfig.colorOfHomePage["text"],
+                                ),
+                              ),
+                              Text(
+                                "${product.price}đ",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppConfig.colorOfHomePage["text"],
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
                       ),
-                      Text(
-                        "${product.value}.000đ",
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: AppConfig.colorOfHomePage["text"]),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "${AppConfig.textLanguage["total_cost"]!["thanhtien"]} : $totalPrice VND",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: AppConfig.colorOfHomePage["text"],
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  );
-                }).toList(),
-              ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
-          // Đây là hiển thị tổng tiền
-          //SizedBox(height: 10),
-          Text(
-            "${AppConfig.textLanguage["total_cost"]!["thanhtien"]} : ${listProducts.map((e) => e.value).reduce((a, b) => a + b)}.000 VND",
-            style: TextStyle(
-                fontSize: 20,
-                color: AppConfig.colorOfHomePage["text"],
-                fontWeight: FontWeight.bold),
-          ),
           SizedBox(height: 10),
-          // Đây là nút để xác nhận thanh toán
           InkWell(
             onTap: () {},
             child: Container(
@@ -119,8 +116,10 @@ class _BillContainerState extends State<BillContainer> {
                 color: const Color.fromARGB(255, 200, 248, 171),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: Text("Xác nhận thanh toán",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              child: Text(
+                "Xác nhận thanh toán",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],

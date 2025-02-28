@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vcartpi/core/configs/app_configs.dart';
 import 'package:vcartpi/core/utils/api_service.dart';
-import 'package:vcartpi/data/models/product_count_money.dart';
+import 'package:vcartpi/data/models/product.dart';
 import 'package:vcartpi/presentation/pages/discount_page/discount_page.dart';
 import 'package:vcartpi/presentation/pages/guide_page/guide_page.dart';
 import 'package:vcartpi/presentation/pages/home_page/components/bill_container.dart';
@@ -16,28 +16,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<ProductCountMoneyModel> listProducts = [];
-  Map<String, ProductCountMoneyModel> groupedProducts = {};
+  Map<String, Product> groupedProducts = {};
 
-  late Future<List<dynamic>> futureProducts;
+  late Future<List<Product>> listProducts;
 
   void _loadProducts() {
-    futureProducts = ApiService().fetchProducts();
-    listProducts = ProductCountMoneyModel.loadListProducts();
+    listProducts = ApiService().fetchProducts();
+  }
 
-    groupedProducts.clear();
-    for (var product in listProducts) {
-      if (groupedProducts.containsKey(product.name)) {
-        groupedProducts[product.name]!.numbers += 1;
-        groupedProducts[product.name]!.value += product.value;
-      } else {
-        groupedProducts[product.name] = ProductCountMoneyModel(
-          name: product.name,
-          numbers: 1,
-          value: product.value,
-          imgUrl: product.imgUrl,
-        );
-      }
+  Stream<List<Product>> _streamProducts() async* {
+    while (true) {
+      List<Product> products = await ApiService().fetchProducts();
+      yield products; // Cập nhật dữ liệu mới vào Stream
+      await Future.delayed(Duration(seconds: 5)); // Cập nhật mỗi 5 giây
     }
   }
 
@@ -123,56 +114,49 @@ class _HomePageState extends State<HomePage> {
                     ),
                     // Nơi đây là nơi ăn tiền - hiển thị các sản phẩm trên giỏ hàng
                     const SizedBox(height: 10),
-                    (groupedProducts.isNotEmpty)
-                        ? Expanded(
-                            child: GridView.builder(
-                              key: ValueKey(groupedProducts),
-                              itemCount: groupedProducts.isNotEmpty
-                                  ? groupedProducts.length
-                                  : 0,
+                    Expanded(
+                      child: StreamBuilder<List<Product>>(
+                        stream: _streamProducts(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text("Lỗi khi tải dữ liệu"));
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return Center(child: Text("Không có sản phẩm nào"));
+                          } else {
+                            List<Product> products = snapshot.data!;
+                            return GridView.builder(
                               gridDelegate:
-                                  SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent: 330,
-                                childAspectRatio: 1.3,
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
                               ),
+                              itemCount: products.length,
                               itemBuilder: (context, index) {
-                                if (groupedProducts.isEmpty)
-                                  return SizedBox(); // Chặn lỗi
-
-                                var productEntry =
-                                    groupedProducts.entries.elementAt(index);
-                                var product = productEntry.value;
-
-                                return Product(
-                                  key: ValueKey(product.name),
-                                  product: product,
-                                  numbers: product.numbers,
-                                  colorInUsed: AppConfig.colorOfHomePage,
+                                return ProductContainer(
+                                  product: products[index],
+                                  numbers: 1,
+                                  colorInUsed: {
+                                    "grid": Colors.grey.shade300,
+                                    "text": Colors.black,
+                                  },
                                 );
                               },
-                            ),
-                          )
-                        : Container(
-                            width: 590,
-                            height: 430,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                border:
-                                    Border.all(width: 1, color: Colors.black)),
-                            child: Text(
-                              "Không có sản phẩm nào trong giỏ hàng",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          )
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
               // Đây là nơi hiển thị bill tính tiền
-              BillContainer(),
+              BillContainer(streamProducts: ApiService().streamProducts),
             ],
           ),
         ],

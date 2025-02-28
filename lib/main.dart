@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:vcartpi/data/models/product_count_money.dart';
 import 'package:vcartpi/presentation/pages/home_page/home_page.dart';
 import 'package:vcartpi/presentation/pages/product_page/product_page.dart';
-import 'package:vcartpi/presentation/pages/test_page/test_page.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -38,7 +37,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         useMaterial3: true,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }

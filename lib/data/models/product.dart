@@ -1,24 +1,33 @@
 class Product {
-  final String product_id;
-  final String product_name;
-  final double price;
+  final int productId;
+  final String productName;
+  final int price;
   final String description;
-  final String url_image;
+  final int quantity;
+  final String urlImage;
 
-  Product(
-      {required this.product_id,
-      required this.product_name,
-      required this.price,
-      required this.description,
-      required this.url_image});
+  Product({
+    required this.productId,
+    required this.productName,
+    required this.price,
+    required this.description,
+    required this.quantity,
+    required this.urlImage,
+  });
 
-  // Chuyển đổi từ JSON sang Product
+  // Hàm chuyển đổi từ JSON sang đối tượng Product
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-        product_id: json['product_id'],
-        product_name: json['product_name'],
-        description: json['product_description'],
-        price: json['price'],
-        url_image: json['url_image']);
+      productId: json['product_id'] as int,
+      productName: json['product_name'] as String,
+      price: json['price'] as int,
+      description: json['description'] as String,
+      quantity: json['quantity'] as int,
+      urlImage: json['url_image'] as String? ?? '', // Xử lý trường hợp null
+    );
   }
+
+  @override
+  String toString() =>
+      '{id : $productId ; name : $productName ; price : $price ; description : $description ; url_image : $urlImage ;}';
 }
