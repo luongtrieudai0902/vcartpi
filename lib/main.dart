@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vcartpi/data/models/product_count_money.dart';
+import 'package:vcartpi/presentation/pages/cart_page/cart_page.dart';
 import 'package:vcartpi/presentation/pages/home_page/home_page.dart';
-import 'package:vcartpi/presentation/pages/product_page/product_page.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -21,6 +20,9 @@ void main() async {
     await windowManager.show();
   });
 
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -37,7 +39,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: CartPage(),
     );
   }
 }

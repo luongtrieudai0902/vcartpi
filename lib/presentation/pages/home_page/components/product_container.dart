@@ -53,7 +53,7 @@ class ProductContainer extends StatelessWidget {
               endIndent: 15,
             ),
             // Tên sản phẩm
-            Text(product.productName,
+            Text(product.description,
                 style: TextStyle(
                     color: colorInUsed["text"], fontSize: 16)), // ✅ Giảm font
             // Giá và số lượng

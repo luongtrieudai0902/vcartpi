@@ -73,7 +73,7 @@ class _BillContainerState extends State<BillContainer> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "${product.productName} \t\t x${product.quantity}",
+                                "${product.description} \t\t x${product.quantity}",
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: AppConfig.colorOfHomePage["text"],
