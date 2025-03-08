@@ -52,7 +52,7 @@ class ProductCard extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Text("${productInfo.price} Đ",
+                                Text("${formatCurrency(productInfo.price)} Đ",
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontSize: 19,
@@ -85,7 +85,8 @@ class ProductCard extends StatelessWidget {
                         // Price of product
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text("${formatCurrency(productInfo.price)} Đ",
+                          child: Text(
+                              "${formatCurrency(productInfo.price * productInfo.quantity)} Đ",
                               style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 25,

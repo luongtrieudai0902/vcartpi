@@ -3,6 +3,7 @@ import 'package:vcartpi/core/utils/api_service.dart';
 import 'package:vcartpi/core/utils/format_str.dart';
 import 'package:vcartpi/data/models/product.dart';
 import 'package:vcartpi/presentation/pages/cart_page/components/product_card.dart';
+import 'package:vcartpi/presentation/pages/plu_page/plu_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -202,14 +203,23 @@ class _CartPageState extends State<CartPage> {
                               height: 50,
                               child: Image.network(
                                   "https://cdn1.iconfinder.com/data/icons/fruit-cartoon-flat-cute-fruity/512/mangosteen-1024.png")),
-                          Container(
-                            margin: const EdgeInsets.only(left: 30),
-                            child: const Text(
-                              "Add PLU Item",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          DashCartPLUScreen()));
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 30),
+                              child: const Text(
+                                "Add PLU Item",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                         ],
